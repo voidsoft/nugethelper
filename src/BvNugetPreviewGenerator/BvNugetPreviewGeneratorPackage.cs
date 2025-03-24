@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using BvNugetPreviewGenerator.Options;
 using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
 
@@ -25,6 +26,7 @@ namespace BvNugetPreviewGenerator
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [Guid(BvNugetPreviewGeneratorPackage.PackageGuidString)]
+    [ProvideOptionPage(typeof(PreviewGeneratorOptions), "Nuget Preview Generator", "General", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class BvNugetPreviewGeneratorPackage : AsyncPackage
     {
@@ -33,7 +35,20 @@ namespace BvNugetPreviewGenerator
         /// </summary>
         public const string PackageGuidString = "294208b7-7166-4acc-a252-b59af677ca11";
 
+        #region Package Options
+        public string DestinationNugetPreviewSource
+        {
+            get
+            {
+                PreviewGeneratorOptions page = (PreviewGeneratorOptions)GetDialogPage(typeof(PreviewGeneratorOptions));
+                return page.DestinationNugetPreviewSource;
+            }
+        }
+
+        #endregion
+
         #region Package Members
+
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place

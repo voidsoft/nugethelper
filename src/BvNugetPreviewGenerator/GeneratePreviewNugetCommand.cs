@@ -1,8 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using BvNugetPreviewGenerator.Generate;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
@@ -57,7 +60,7 @@ namespace BvNugetPreviewGenerator
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider
+        private System.IServiceProvider ServiceProvider
         {
             get
             {
@@ -89,17 +92,42 @@ namespace BvNugetPreviewGenerator
         private void Execute(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
-            string title = "Generate Preview Nuget Package";
+            EnvDTE.DTE service = (EnvDTE.DTE)ServiceProvider.GetService(typeof(EnvDTE.DTE));
+            var selectedItems = service.SelectedItems;
+            EnvDTE.SelectedItem projectItem = null;
 
-            // Show a message box to prove we were here
-            VsShellUtilities.ShowMessageBox(
-                this.package,
-                message,
-                title,
-                OLEMSGICON.OLEMSGICON_INFO,
-                OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            foreach (EnvDTE.SelectedItem item in selectedItems)
+            {
+                projectItem = item;
+                continue;
+            }
+
+            if (projectItem == null || 
+                projectItem.Project == null || 
+                string.IsNullOrEmpty(projectItem.Project.FileName))
+                return;
+
+            var bvPreviewPackage = this.package as BvNugetPreviewGeneratorPackage;
+            var projectFile  = projectItem.Project.FileName;
+            Func<PreviewPackageGenerateResult, Task> callBack = async message => await TaskCompletedCallBackAsync(message);
+
+            _ = Task.Run(async () =>
+            {
+                var generator = new PreviewPackageGenerator();
+                var message = generator.GeneratePackage(projectFile, bvPreviewPackage.DestinationNugetPreviewSource);
+                await callBack(message);                
+            });
+
+        }
+
+        public async Task TaskCompletedCallBackAsync(PreviewPackageGenerateResult resultMessage)
+        {
+            // Switch to the main thread - the call to AddCommand in Command1's constructor requires
+            // the UI thread.
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
+            var messageBox = new GeneratedMessage();
+            messageBox.PreviewPackageGenerateResult = resultMessage;
+            messageBox.ShowDialog();
         }
     }
 }

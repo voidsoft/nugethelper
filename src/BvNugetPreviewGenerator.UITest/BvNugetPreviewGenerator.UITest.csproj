@@ -80,7 +80,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\BvNugetPreviewGenerator\BvNugetPreviewGenerator.csproj">
+    <ProjectReference Include="..\BvNugetPreviewGenerator\BvNugetPreviewGenerator.csproj">
       <Project>{bf84651e-71a6-4a30-8b74-63bf4e7eb353}</Project>
       <Name>BvNugetPreviewGenerator</Name>
     </ProjectReference>
