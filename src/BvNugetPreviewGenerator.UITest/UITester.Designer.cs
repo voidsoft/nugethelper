@@ -30,6 +30,7 @@
         {
             this.btnSuccessResult = new System.Windows.Forms.Button();
             this.btnFail = new System.Windows.Forms.Button();
+            this.btnExpectedFailureResult = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnSuccessResult
@@ -52,11 +53,22 @@
             this.btnFail.UseVisualStyleBackColor = true;
             this.btnFail.Click += new System.EventHandler(this.btnFail_Click);
             // 
+            // btnExpectedFailureResult
+            // 
+            this.btnExpectedFailureResult.Location = new System.Drawing.Point(12, 71);
+            this.btnExpectedFailureResult.Name = "btnExpectedFailureResult";
+            this.btnExpectedFailureResult.Size = new System.Drawing.Size(160, 23);
+            this.btnExpectedFailureResult.TabIndex = 2;
+            this.btnExpectedFailureResult.Text = "Expected Failure Result";
+            this.btnExpectedFailureResult.UseVisualStyleBackColor = true;
+            this.btnExpectedFailureResult.Click += new System.EventHandler(this.btnExpectedFailureResult_Click);
+            // 
             // UITester
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnExpectedFailureResult);
             this.Controls.Add(this.btnFail);
             this.Controls.Add(this.btnSuccessResult);
             this.Name = "UITester";
@@ -69,6 +81,7 @@
 
         private System.Windows.Forms.Button btnSuccessResult;
         private System.Windows.Forms.Button btnFail;
+        private System.Windows.Forms.Button btnExpectedFailureResult;
     }
 }
 
