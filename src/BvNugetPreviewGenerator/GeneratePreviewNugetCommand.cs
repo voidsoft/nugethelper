@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.Reflection.Emit;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -107,27 +108,16 @@ namespace BvNugetPreviewGenerator
                 string.IsNullOrEmpty(projectItem.Project.FileName))
                 return;
 
+            // For now it's easiest just to run the process in the main thread
+            // in future we can run in async.
             var bvPreviewPackage = this.package as BvNugetPreviewGeneratorPackage;
-            var projectFile  = projectItem.Project.FileName;
-            Func<PreviewPackageGenerateResult, Task> callBack = async message => await TaskCompletedCallBackAsync(message);
-
-            _ = Task.Run(async () =>
-            {
-                var generator = new PreviewPackageGenerator();
-                var message = generator.GeneratePackage(projectFile, bvPreviewPackage.DestinationNugetPreviewSource);
-                await callBack(message);                
-            });
-
-        }
-
-        public async Task TaskCompletedCallBackAsync(PreviewPackageGenerateResult resultMessage)
-        {
-            // Switch to the main thread - the call to AddCommand in Command1's constructor requires
-            // the UI thread.
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
+            var projectFile  = projectItem.Project.FileName;           
+            var generator = new PreviewPackageGenerator();
+            var message = generator.GeneratePackage(projectFile, bvPreviewPackage.DestinationNugetPreviewSource);
             var messageBox = new GeneratedMessage();
-            messageBox.PreviewPackageGenerateResult = resultMessage;
+            messageBox.PreviewPackageGenerateResult = message;
             messageBox.ShowDialog();
         }
+
     }
 }

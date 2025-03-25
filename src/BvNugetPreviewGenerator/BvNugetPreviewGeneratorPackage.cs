@@ -26,7 +26,7 @@ namespace BvNugetPreviewGenerator
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [Guid(BvNugetPreviewGeneratorPackage.PackageGuidString)]
-    [ProvideOptionPage(typeof(PreviewGeneratorOptions), "Nuget Preview Generator", "General", 0, 0, true)]
+    [ProvideOptionPage(typeof(PreviewGeneratorOptions), "NuGet Package Manager", "Nuget Preview Generator", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class BvNugetPreviewGeneratorPackage : AsyncPackage
     {
