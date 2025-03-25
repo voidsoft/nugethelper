@@ -12,6 +12,11 @@ namespace BvNugetPreviewGenerator.Generate
 {
     public partial class GeneratedMessage: Form
     {
+
+        private const int Height_ExpectedFailure = 157;
+        private const int Height_UnexpectedFailure = 386;
+        private const int Height_Success = 271;
+
         public GeneratedMessage()
         {
             InitializeComponent();
@@ -36,17 +41,29 @@ namespace BvNugetPreviewGenerator.Generate
 
             if (result.IsSuccess)
             {
+                lblHeading.Text = "Nuget Preview Package Created Successfully";
                 picMainIcon.Image = SystemIcons.Information.ToBitmap();
                 txtExceptionDetails.Visible = false;
                 lblExceptionDetails.Visible = false;
-                Height = 271;
+                Height = Height_Success;
+            }
+            else if (result.IsExpectedFailure)
+            {
+                lblHeading.Text = "Unable to Create Nuget Preview Package";
+                picMainIcon.Image = SystemIcons.Warning.ToBitmap();
+                txtExceptionDetails.Visible = false;
+                lblExceptionDetails.Visible = false;
+                txtLogOutput.Visible = false;
+                lblLogOutput.Visible = false;
+                Height = Height_ExpectedFailure;
             }
             else
             {
-                picMainIcon.Image = SystemIcons.Warning.ToBitmap();
+                lblHeading.Text = "Nuget Package Creation Encounted an Unexpected Error";
+                picMainIcon.Image = SystemIcons.Error.ToBitmap();
                 txtExceptionDetails.Visible = true;
                 lblExceptionDetails.Visible = true;
-                Height = 386;
+                Height = Height_UnexpectedFailure;
             }
 
             lblMainText.Text = result.Message;

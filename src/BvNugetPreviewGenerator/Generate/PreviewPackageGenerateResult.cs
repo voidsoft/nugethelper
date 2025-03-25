@@ -12,7 +12,7 @@ namespace BvNugetPreviewGenerator.Generate
         {
             var result = new PreviewPackageGenerateResult();
             result.IsSuccess = true;
-            result.Message = $"New Package {context.VersionNo} created successfully.";
+            result.Message = $"New Package {context.PackageFilename} created successfully.";
             result.LogText = context.GetLogText();
             return result;
         }
@@ -21,7 +21,18 @@ namespace BvNugetPreviewGenerator.Generate
         {
             var result = new PreviewPackageGenerateResult();
             result.IsSuccess = false;
-            result.Message = $"Preview NuGet Package failed to create, see the log and exception text for more details.";
+            if (ex is PreviewPackageGenerateException)
+            {
+                result.IsExpectedFailure = true;
+                result.Message = ex.Message;
+            }
+            else
+            {
+                result.Message = $"An unexpected error occured attempting to " +
+                    $"create the Preview Nuget Package, see the log and exception " +
+                    $"text for more details.";
+            }
+            
             result.LogText = context.GetLogText();
             result.Exception = ex;
             return result;
@@ -34,6 +45,7 @@ namespace BvNugetPreviewGenerator.Generate
         }
 
         public bool IsSuccess { get; set; }
+        public bool IsExpectedFailure { get; set; }
         public string LogText { get; set; }
         public string Message { get; set; }
         public Exception Exception { get; set; }

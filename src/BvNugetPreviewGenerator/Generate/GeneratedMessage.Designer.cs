@@ -51,7 +51,7 @@
             // 
             this.lblHeading.AutoSize = true;
             this.lblHeading.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblHeading.Location = new System.Drawing.Point(127, 12);
+            this.lblHeading.Location = new System.Drawing.Point(68, 9);
             this.lblHeading.Name = "lblHeading";
             this.lblHeading.Size = new System.Drawing.Size(336, 17);
             this.lblHeading.TabIndex = 1;
@@ -59,7 +59,7 @@
             // 
             // lblMainText
             // 
-            this.lblMainText.Location = new System.Drawing.Point(127, 39);
+            this.lblMainText.Location = new System.Drawing.Point(68, 36);
             this.lblMainText.Name = "lblMainText";
             this.lblMainText.Size = new System.Drawing.Size(402, 33);
             this.lblMainText.TabIndex = 2;
@@ -71,8 +71,9 @@
             this.txtLogOutput.Multiline = true;
             this.txtLogOutput.Name = "txtLogOutput";
             this.txtLogOutput.ReadOnly = true;
-            this.txtLogOutput.Size = new System.Drawing.Size(520, 86);
+            this.txtLogOutput.Size = new System.Drawing.Size(508, 86);
             this.txtLogOutput.TabIndex = 3;
+            this.txtLogOutput.WordWrap = false;
             // 
             // txtExceptionDetails
             // 
@@ -80,8 +81,9 @@
             this.txtExceptionDetails.Multiline = true;
             this.txtExceptionDetails.Name = "txtExceptionDetails";
             this.txtExceptionDetails.ReadOnly = true;
-            this.txtExceptionDetails.Size = new System.Drawing.Size(520, 86);
+            this.txtExceptionDetails.Size = new System.Drawing.Size(508, 86);
             this.txtExceptionDetails.TabIndex = 4;
+            this.txtExceptionDetails.WordWrap = false;
             // 
             // lblLogOutput
             // 

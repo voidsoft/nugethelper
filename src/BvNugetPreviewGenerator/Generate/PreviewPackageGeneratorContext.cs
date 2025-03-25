@@ -18,10 +18,12 @@ namespace BvNugetPreviewGenerator.Generate
 
         private StringBuilder _LogText { get; set; }
         public string ProjectPath { get; set; }
+        public string ProjectFilename { get; set; }
         public string NugetPath { get; set; }   
         public string VersionNo { get; set; }
         public string OriginalProjectContent { get; set; }
         public string TempPath { get; set; }
+        public string PackageFilename { get; set; }
 
         public void Log(string message)
         {
