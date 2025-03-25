@@ -38,9 +38,9 @@ Once you've added your new source, the next stage is to configure the *Nuget Pre
 Once you've configured Preview Generator, it's simply a case of choosing a Project, right clicking that project to bring up the menu and clicking **Generate Preview Nuget Package** the only prerequisite being that the Project in question has a configured version number. You can add this by adding a **Version** on the project XML like so.
 
 ~~~
-&lt;PropertyGroup&gt;
-	&lt;TargetFramework&gt;netstandard2.1&lt;/TargetFramework&gt;
-	&lt;Nullable&gt;enable&lt;/Nullable&gt;
-	&lt;Version&gt;1.0.1&lt;/Version&gt;
-&lt;/PropertyGroup&gt;
+<PropertyGroup>
+	<TargetFramework>netstandard2.1</TargetFramework>
+	<Nullable>enable</Nullable>
+	<Version>1.0.1</Version>
+</PropertyGroup>
 ~~~
