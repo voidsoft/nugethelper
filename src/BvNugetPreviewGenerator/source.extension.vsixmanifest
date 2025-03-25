@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
 	<Metadata>
-		<Identity Id="BvNugetPreviewGenerator.0b65a0dd-9797-40e4-a9cc-72f247048925" Version="1.0" Language="en-US" Publisher="Andreas Paterson" />
+		<Identity Id="BvNugetPreviewGenerator.0b65a0dd-9797-40e4-a9cc-72f247048925" Version="1.0" Language="en-US" Publisher="Void Software Development" />
 		<DisplayName>Nuget Preview Generator</DisplayName>
 		<Description xml:space="preserve">A utility to help users quickly and easily generate preview NuGet packages and place them in a local repository to allow easier debugging when the need arises to make changes to a NuGet package as part of a change to another project.</Description>
 		<License>LICENSE.txt</License>
 		<ReleaseNotes>releasenotes.txt</ReleaseNotes>
-		<Icon>Resources\icon.png</Icon>
-		<PreviewImage>Resources\preview.png</PreviewImage>
+		<Icon>icon.png</Icon>
+		<PreviewImage>preview.png</PreviewImage>
 		<Tags>nuget, preview, generator, timesaver</Tags>
 	</Metadata>
 	<Installation>
 		<InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
 			<ProductArchitecture>amd64</ProductArchitecture>
 		</InstallationTarget>
-		<InstallationTarget Version="[16.0,18.0)" Id="Microsoft.VisualStudio.Pro">
+		<InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Pro">
 			<ProductArchitecture>amd64</ProductArchitecture>
 		</InstallationTarget>
 	</Installation>
