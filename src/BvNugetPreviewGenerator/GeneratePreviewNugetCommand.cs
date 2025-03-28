@@ -18,6 +18,7 @@ namespace BvNugetPreviewGenerator
     /// </summary>
     internal sealed class GeneratePreviewNugetCommand
     {
+        private GenerateForm _GenerateForm;
         /// <summary>
         /// Command ID.
         /// </summary>
@@ -47,6 +48,8 @@ namespace BvNugetPreviewGenerator
             var menuCommandID = new CommandID(CommandSet, CommandId);
             var menuItem = new MenuCommand(this.Execute, menuCommandID);
             commandService.AddCommand(menuItem);
+            _GenerateForm = new GenerateForm();
+
         }
 
         /// <summary>
@@ -111,13 +114,54 @@ namespace BvNugetPreviewGenerator
             // For now it's easiest just to run the process in the main thread
             // in future we can run in async.
             var bvPreviewPackage = this.package as BvNugetPreviewGeneratorPackage;
-            var projectFile  = projectItem.Project.FileName;           
+            var projectFile  = projectItem.Project.FileName;
             var generator = new PreviewPackageGenerator();
-            var message = generator.GeneratePackage(projectFile, bvPreviewPackage.DestinationNugetPreviewSource);
-            var messageBox = new GeneratedMessage();
-            messageBox.PreviewPackageGenerateResult = message;
-            messageBox.ShowDialog();
+            generator.LogEvent += Generator_LogEvent;
+            generator.ProgressEvent += Generator_ProgressEvent;
+            generator.CompleteEvent += Generator_CompleteEvent; ;
+
+            _GenerateForm.StartProgress();
+            _GenerateForm.Show();
+            _ = Task.Run(() =>
+            {
+                var messageBox = new GenerateForm();
+                generator.GeneratePackage(projectFile, bvPreviewPackage.DestinationNugetPreviewSource);                
+
+            });
         }
 
+        private void Generator_CompleteEvent(PreviewPackageGenerateResult obj)
+        {
+            var form = _GenerateForm;
+            var package = this.package;
+            _ = Task.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
+                form.SetResult(obj);
+            });
+        }
+
+        private void Generator_ProgressEvent(int progress, string message)
+        {
+            var form = _GenerateForm;
+            var package = this.package;
+            _ = Task.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
+                form.SetProgress(progress, message);
+            });
+            
+        }
+
+        private void Generator_LogEvent(string message)
+        {
+            var form = _GenerateForm;
+            var package = this.package;
+            _ = Task.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
+                form.LogEvent(message);
+            });            
+        }
     }
 }

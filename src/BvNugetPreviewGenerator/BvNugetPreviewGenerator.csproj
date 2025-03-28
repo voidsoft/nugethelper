@@ -52,11 +52,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="GeneratePreviewNugetCommand.cs" />
-    <Compile Include="Generate\GeneratedMessage.cs">
+    <Compile Include="Generate\GenerateForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Generate\GeneratedMessage.Designer.cs">
-      <DependentUpon>GeneratedMessage.cs</DependentUpon>
+    <Compile Include="Generate\GenerateForm.Designer.cs">
+      <DependentUpon>GenerateForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Generate\PackageVersion.cs" />
     <Compile Include="Generate\PreviewPackageGenerateException.cs" />
@@ -68,6 +68,11 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BvNugetPreviewGeneratorPackage.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.png">
@@ -80,6 +85,7 @@
     </Content>
     <Content Include="Resources\icon.png" />
     <Content Include="Resources\preview.png" />
+    <EmbeddedResource Include="Resources\windowicon32.png" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -119,8 +125,12 @@
     <Content Include="Resources\GeneratePreviewNugetCommand.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Generate\GeneratedMessage.resx">
-      <DependentUpon>GeneratedMessage.cs</DependentUpon>
+    <EmbeddedResource Include="Generate\GenerateForm.resx">
+      <DependentUpon>GenerateForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

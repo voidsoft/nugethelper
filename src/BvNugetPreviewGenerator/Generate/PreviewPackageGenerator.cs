@@ -2,19 +2,24 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace BvNugetPreviewGenerator.Generate
 {
-    class PreviewPackageGenerator
+    public class PreviewPackageGenerator
     {
-        public PreviewPackageGenerateResult GeneratePackage(string projectPath, string nugetPath)
+        public event Action<string> LogEvent;
+        public event Action<int, string> ProgressEvent;
+        public event Action<PreviewPackageGenerateResult> CompleteEvent;
+        public void GeneratePackage(string projectPath, string nugetPath)
         {
             
 
@@ -26,6 +31,7 @@ namespace BvNugetPreviewGenerator.Generate
 
             try
             {
+                Progress(0, "Performing Initial Checks");
                 PreviewPackageGenerateException
                     .ThrowIf(string.IsNullOrWhiteSpace(nugetPath),
                         "No NuGet repository folder has been specified, please configure a folder " +
@@ -38,32 +44,41 @@ namespace BvNugetPreviewGenerator.Generate
 
                 PreviewPackageGenerateException
                     .ThrowIf(string.IsNullOrWhiteSpace(projectPath),
-                        "No project file was specified for this package.");               
-
-                UpdateProjectVersion(context);
+                        "No project file was specified for this package.");
+                Progress(5, "Initial Checks Complete");
+                Progress(10, "Updating Project Version");
+                UpdateProjectVersion(context);                
+                Progress(15, "Building Project");
                 RunDotNetBuild(context);
+                Progress(75, "Pushing Project to Nuget");
                 RunNugetPush(context);
+                Progress(85, "Restoring Project");
                 RestoreProjectVersion(context);
+                Progress(95, "Cleaning Up");
                 CleanUp(context);
+                Progress(100, "Generation Complete");                
             }
             catch (PreviewPackageGenerateException ex)
             {
-                return PreviewPackageGenerateResult.CreateFailureResult(context, ex);
+                var failResult = PreviewPackageGenerateResult.CreateFailureResult(context, ex);
+                CompleteEvent(failResult);
             }
             catch (Exception ex)
             {
-                return PreviewPackageGenerateResult.CreateFailureResult(context, ex);
+                var failResult = PreviewPackageGenerateResult.CreateFailureResult(context, ex);
+                CompleteEvent(failResult);
             }
 
-            return PreviewPackageGenerateResult.CreateSuccessResult(context);
+            var result = PreviewPackageGenerateResult.CreateSuccessResult(context);
+            CompleteEvent(result);
         }
 
         private void RestoreProjectVersion(PreviewPackageGeneratorContext context)
         {
-            context.Log($"Restoring original version of {context.ProjectFilename}");
+            Log($"Restoring original version of {context.ProjectFilename}");
             SaveFile(context.ProjectPath, context.OriginalProjectContent);
+            Log($"Restoration Complete");
         }
-
         private string LoadFile(string fileName)
         {
             var reader = new StreamReader(fileName);
@@ -77,7 +92,6 @@ namespace BvNugetPreviewGenerator.Generate
             writer.Write(content);
             writer.Close();
         }
-
         private void UpdateProjectVersion_AddOrEditNode(XmlNode parent, string nodeName, string nodeValue)
         {
             var doc = parent.OwnerDocument;
@@ -97,7 +111,7 @@ namespace BvNugetPreviewGenerator.Generate
 
         private void UpdateProjectVersion(PreviewPackageGeneratorContext context)
         {
-            context.Log($"Updating Project Version in {context.ProjectFilename}");
+            Log($"Updating Project Version in {context.ProjectFilename}");
             context.OriginalProjectContent = LoadFile(context.ProjectPath);
             var doc = new XmlDocument();
             doc.LoadXml(context.OriginalProjectContent);
@@ -122,11 +136,12 @@ namespace BvNugetPreviewGenerator.Generate
                 "GeneratePackageOnBuild", "true");
             doc.Save(context.ProjectPath);
             context.VersionNo = version.ToString();
+            Log($"Update Complete");
         }
 
         private string RunDotNetBuild(PreviewPackageGeneratorContext context)
         {
-
+            Log($"Running DotNet Build Of {context.ProjectFilename}");
             var projectPath = context.ProjectPath;
             var outputFolder = context.TempPath;
             var version = context.VersionNo;
@@ -135,6 +150,7 @@ namespace BvNugetPreviewGenerator.Generate
                 $"build \"{projectPath}\" " +
                 $"--configuration Debug " +
                 $"-o:\"{outputFolder}\"");
+            Log($"DotNet Build Complete");
             return output;
         }
 
@@ -149,6 +165,7 @@ namespace BvNugetPreviewGenerator.Generate
             var lastDot = fileName.LastIndexOf(".");
             var projectName = fileName.Substring(0, lastDot);
             var packageFileName = $"{projectName}.{version}.nupkg";
+            Log($"Running DotNet Push Of {packageFileName}");
             context.PackageFilename = packageFileName;
 
             var fullProjName = $"{outputFolder}{packageFileName}";            
@@ -156,44 +173,66 @@ namespace BvNugetPreviewGenerator.Generate
             var sb = new StringBuilder();
             var output = RunTask(context, "dotnet", 
                 $"nuget push {fullProjName} -s {context.NugetPath}");
+            Log($"DotNet Push Complete");
             return output;
         }
 
         private void CleanUp(PreviewPackageGeneratorContext context)
         {
-            context.Log("Cleaning up temporary files");
+            Log("Cleaning up temporary files");
             var tempFolder = context.TempPath;
             var packageFileName = context.PackageFilename;
             var fullProjName = $"{tempFolder}{packageFileName}";
             if (File.Exists(fullProjName))
                 File.Delete(fullProjName);
+            Log("Cleanup Complete");
         }
 
         private string RunTask(PreviewPackageGeneratorContext context,string processName, string parameters)
         {
             try
             {
-                context.Log($"Attempting to Run: {processName} {parameters}");
+                Log($"Attempting to Run: {processName} {parameters}");
                 var procStIfo = new ProcessStartInfo(processName, parameters);
                 procStIfo.RedirectStandardOutput = true;
                 procStIfo.UseShellExecute = false;
                 procStIfo.CreateNoWindow = true;
 
-                var proc = new Process();
-                proc.StartInfo = procStIfo;
-                proc.Start();
-                proc.WaitForExit();
-                var output = proc.StandardOutput.ReadToEnd();
-                return output;
+                using (var proc = new Process())
+                {
+                    proc.StartInfo = procStIfo;
+                    proc.Start();                    
+                    proc.WaitForExit();
+                    var output = proc.StandardOutput.ReadToEnd();
+                    return output;
+                }
             }
             catch (Exception ex)
             {
-                context.Log($"Exception Occured running: {processName} {parameters}");
-                context.Log($"Exception Message: {ex.Message}");
-                context.Log($"Stack Trace: {ex.StackTrace}");
+                Log($"Exception Occured running: {processName} {parameters}");
+                Log($"Exception Message: {ex.Message}");
+                Log($"Stack Trace: {ex.StackTrace}");
                 throw;
             }
             
+        }
+
+        public void Log(string message)
+        {
+            if (LogEvent != null)
+                LogEvent(message);
+        }
+
+        public void Progress(int progress,string message)
+        {
+            if (ProgressEvent != null)
+                ProgressEvent(progress,message);
+        }
+
+        public void Complete(PreviewPackageGenerateResult result)
+        {
+            if (CompleteEvent != null)
+                CompleteEvent(result);
         }
     }
 }

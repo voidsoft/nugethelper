@@ -13,10 +13,8 @@ namespace BvNugetPreviewGenerator.Generate
             ProjectPath = string.Empty;
             VersionNo = string.Empty;
             OriginalProjectContent = string.Empty;
-            _LogText = new StringBuilder();
         }
 
-        private StringBuilder _LogText { get; set; }
         public string ProjectPath { get; set; }
         public string ProjectFilename { get; set; }
         public string NugetPath { get; set; }   
@@ -25,14 +23,5 @@ namespace BvNugetPreviewGenerator.Generate
         public string TempPath { get; set; }
         public string PackageFilename { get; set; }
 
-        public void Log(string message)
-        {
-            _LogText.AppendLine(message);
-        }
-
-        public string GetLogText()
-        {
-            return _LogText.ToString();
-        }
     }
 }

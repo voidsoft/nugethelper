@@ -31,6 +31,8 @@
             this.btnSuccessResult = new System.Windows.Forms.Button();
             this.btnFail = new System.Windows.Forms.Button();
             this.btnExpectedFailureResult = new System.Windows.Forms.Button();
+            this.btnProgressTest = new System.Windows.Forms.Button();
+            this.btnTestProgessFailure = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnSuccessResult
@@ -63,11 +65,33 @@
             this.btnExpectedFailureResult.UseVisualStyleBackColor = true;
             this.btnExpectedFailureResult.Click += new System.EventHandler(this.btnExpectedFailureResult_Click);
             // 
+            // btnProgressTest
+            // 
+            this.btnProgressTest.Location = new System.Drawing.Point(13, 100);
+            this.btnProgressTest.Name = "btnProgressTest";
+            this.btnProgressTest.Size = new System.Drawing.Size(160, 23);
+            this.btnProgressTest.TabIndex = 3;
+            this.btnProgressTest.Text = "Test Progress Form";
+            this.btnProgressTest.UseVisualStyleBackColor = true;
+            this.btnProgressTest.Click += new System.EventHandler(this.btnProgressTest_Click);
+            // 
+            // btnTestProgessFailure
+            // 
+            this.btnTestProgessFailure.Location = new System.Drawing.Point(12, 129);
+            this.btnTestProgessFailure.Name = "btnTestProgessFailure";
+            this.btnTestProgessFailure.Size = new System.Drawing.Size(160, 23);
+            this.btnTestProgessFailure.TabIndex = 4;
+            this.btnTestProgessFailure.Text = "Test Progress Failure";
+            this.btnTestProgessFailure.UseVisualStyleBackColor = true;
+            this.btnTestProgessFailure.Click += new System.EventHandler(this.btnTestProgessFailure_Click);
+            // 
             // UITester
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnTestProgessFailure);
+            this.Controls.Add(this.btnProgressTest);
             this.Controls.Add(this.btnExpectedFailureResult);
             this.Controls.Add(this.btnFail);
             this.Controls.Add(this.btnSuccessResult);
@@ -82,6 +106,8 @@
         private System.Windows.Forms.Button btnSuccessResult;
         private System.Windows.Forms.Button btnFail;
         private System.Windows.Forms.Button btnExpectedFailureResult;
+        private System.Windows.Forms.Button btnProgressTest;
+        private System.Windows.Forms.Button btnTestProgessFailure;
     }
 }
 

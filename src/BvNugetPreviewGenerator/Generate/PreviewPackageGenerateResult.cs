@@ -13,7 +13,6 @@ namespace BvNugetPreviewGenerator.Generate
             var result = new PreviewPackageGenerateResult();
             result.IsSuccess = true;
             result.Message = $"New Package {context.PackageFilename} created successfully.";
-            result.LogText = context.GetLogText();
             return result;
         }
 
@@ -33,20 +32,17 @@ namespace BvNugetPreviewGenerator.Generate
                     $"text for more details.";
             }
             
-            result.LogText = context.GetLogText();
             result.Exception = ex;
             return result;
         }
         public PreviewPackageGenerateResult()
         {
             IsSuccess = false;
-            LogText = string.Empty;
             Message = string.Empty;           
         }
 
         public bool IsSuccess { get; set; }
         public bool IsExpectedFailure { get; set; }
-        public string LogText { get; set; }
         public string Message { get; set; }
         public Exception Exception { get; set; }
     }
