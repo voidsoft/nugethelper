@@ -1,1 +1,1 @@
-Nuget Preview Generator-----------------------Release 1.2-------------- Run generation process asynchronously, show form with  progress bar.Release 1.1-------------- Minor changes to manifest description and licence.Release 1.0-------------- Initial Release and Publish
+Nuget Preview Generator-----------------------Release 1.2-------------- Show form with progress bar while generating the Nuget Preview.Release 1.1-------------- Minor changes to manifest description and licence.Release 1.0-------------- Initial Release and Publish
