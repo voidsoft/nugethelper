@@ -111,13 +111,16 @@ namespace BvNugetPreviewGenerator
             // For now it's easiest just to run the process in the main thread
             // in future we can run in async.
             var bvPreviewPackage = this.package as BvNugetPreviewGeneratorPackage;
-            var projectFile  = projectItem.Project.FileName;           
-            var generator = new PreviewPackageGenerator();
-            var message = generator.GeneratePackage(projectFile, bvPreviewPackage.DestinationNugetPreviewSource);
-            var messageBox = new GeneratedMessage();
-            messageBox.PreviewPackageGenerateResult = message;
-            messageBox.ShowDialog();
-        }
+            var projectFile  = projectItem.Project.FileName;
+            var generator = new PackageGenerator();
+            using (var form = new GenerateForm(generator))
+            {
+                form.NugetPath = bvPreviewPackage.DestinationNugetPreviewSource;
+                form.ProjectPath = projectFile;
+                form.ShowDialog();
+            }
 
+
+        }
     }
 }

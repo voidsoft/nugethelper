@@ -1,4 +1,5 @@
 ﻿using BvNugetPreviewGenerator.Generate;
+using BvNugetPreviewGenerator.UITest.Mocks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,6 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,31 +23,28 @@ namespace BvNugetPreviewGenerator.UITest
 
         private void btnSuccessResult_Click(object sender, EventArgs e)
         {
-            var context = new PreviewPackageGeneratorContext();
-            context.Log("Some Test logging for a success");
-            context.Log("More Test logging for a success");
-            var result = PreviewPackageGenerateResult.CreateSuccessResult(context);
-            var form = new GeneratedMessage();
-            form.PreviewPackageGenerateResult = result;
-            form.ShowDialog();
+            var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.Success, null);
+            using (var form = new GenerateForm(mock))
+            {
+                form.ShowDialog();
+            }
         }
 
         private void btnFail_Click(object sender, EventArgs e)
         {
-            var context = new PreviewPackageGeneratorContext();
+            var context = new PackageGeneratorContext();
             try
             {
                 var exception = new Exception("Test Exception");                
-                context.Log("Some Test logging for a success");
-                context.Log("More Test logging for a success");
                 throw exception;
             }
             catch (Exception ex)
             {
-                var result = PreviewPackageGenerateResult.CreateFailureResult(context, ex);
-                var form = new GeneratedMessage();
-                form.PreviewPackageGenerateResult = result;
-                form.ShowDialog();
+                var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.UnexpectedFailure, ex);
+                using (var form = new GenerateForm(mock))
+                {
+                    form.ShowDialog();
+                }
             }
             
 
@@ -53,14 +52,42 @@ namespace BvNugetPreviewGenerator.UITest
 
         private void btnExpectedFailureResult_Click(object sender, EventArgs e)
         {
-            var exception = new PreviewPackageGenerateException("Test Exception");
-            var context = new PreviewPackageGeneratorContext();
-            context.Log("Some Test logging for a success");
-            context.Log("More Test logging for a success");
-            var result = PreviewPackageGenerateResult.CreateFailureResult(context, exception);
-            var form = new GeneratedMessage();
-            form.PreviewPackageGenerateResult = result;
-            form.ShowDialog();
+            var ex = new PackageGenerateException("Expected Failure");
+            var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.ExpectedFailure, ex);
+            using (var form = new GenerateForm(mock))
+            {
+                form.ShowDialog();
+            }
+        }
+
+        private void btnProgressTest_Click(object sender, EventArgs e)
+        {
+            var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.Success, null);
+            using(var form = new GenerateForm(mock))
+            {
+                form.ShowDialog();
+            }
+  
+        }
+
+        private void btnTestProgessFailure_Click(object sender, EventArgs e)
+        {
+            Exception testEx;
+            try
+            {
+                var exception = new Exception("Test Exception");
+                throw exception;
+            }
+            catch (Exception ex)
+            {
+                testEx = ex;
+            }
+
+            var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.UnexpectedFailure, testEx);
+            using (var form = new GenerateForm(mock))
+            {
+                form.ShowDialog();
+            }
         }
     }
 }
