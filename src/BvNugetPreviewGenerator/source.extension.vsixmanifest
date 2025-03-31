@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="BvNugetPreviewGenerator.0b65a0dd-9797-40e4-a9cc-72f247048925" Version="1.1" Language="en-US" Publisher="Void Software Development" />
+        <Identity Id="BvNugetPreviewGenerator.0b65a0dd-9797-40e4-a9cc-72f247048925" Version="1.2" Language="en-US" Publisher="Void Software Development" />
         <DisplayName>Nuget Preview Generator</DisplayName>
         <Description xml:space="preserve">A utility to help users quickly and easily generate preview NuGet packages and place them in a local repository to allow easier debugging.</Description>
         <License>LICENSE.txt</License>
