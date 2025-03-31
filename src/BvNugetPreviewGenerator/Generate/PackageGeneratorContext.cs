@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace BvNugetPreviewGenerator.Generate
 {
-    public class PreviewPackageGeneratorContext
+    public class PackageGeneratorContext
     {
-        public PreviewPackageGeneratorContext()
+        public PackageGeneratorContext()
         {
             ProjectPath = string.Empty;
             VersionNo = string.Empty;

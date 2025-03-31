@@ -58,11 +58,13 @@
     <Compile Include="Generate\GenerateForm.Designer.cs">
       <DependentUpon>GenerateForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Generate\IPackageGenerator.cs" />
+    <Compile Include="Generate\PackageGenerateProgress.cs" />
     <Compile Include="Generate\PackageVersion.cs" />
-    <Compile Include="Generate\PreviewPackageGenerateException.cs" />
-    <Compile Include="Generate\PreviewPackageGenerateResult.cs" />
-    <Compile Include="Generate\PreviewPackageGenerator.cs" />
-    <Compile Include="Generate\PreviewPackageGeneratorContext.cs" />
+    <Compile Include="Generate\PackageGenerateException.cs" />
+    <Compile Include="Generate\PackageGenerateResult.cs" />
+    <Compile Include="Generate\PackageGenerator.cs" />
+    <Compile Include="Generate\PackageGeneratorContext.cs" />
     <Compile Include="Options\PreviewGeneratorOptions.cs">
       <SubType>Component</SubType>
     </Compile>

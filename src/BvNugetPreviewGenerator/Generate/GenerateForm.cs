@@ -14,41 +14,33 @@ namespace BvNugetPreviewGenerator.Generate
     public partial class GenerateForm: Form
     {
 
-        //private const int Height_ExpectedFailure = 157;
-        //private const int Height_UnexpectedFailure = 386;
-        //private const int Height_Success = 271;
+        public string ProjectPath { get; set; }
+        public string NugetPath { get; set; }
 
-        public GenerateForm()
+        private IPackageGenerator _Generator;
+        private PackageGenerateResult _PreviewPackageGenerateResult;
+
+        public GenerateForm(IPackageGenerator generator)
         {
             InitializeComponent();
+            _Generator = generator;
+            generator.ProgressEvent += Generator_ProgressEvent;
+            generator.LogEvent += Generator_LogEvent;
+            generator.CompleteEvent += Generator_CompleteEvent;
         }
 
-        private PreviewPackageGenerateResult _PreviewPackageGenerateResult;
-        public void SetResult(PreviewPackageGenerateResult result)
+        
+        private void SetResult(PackageGenerateResult result)
         {
             _PreviewPackageGenerateResult = result;
             SetControls();
         }
 
-        public void StartProgress()
+        private void StartProgress()
         {
             _PreviewPackageGenerateResult = null;
             prgProgress.Value = 0;
             SetControls();
-            Application.DoEvents();
-        }
-        public void SetProgress(int progress, string message)
-        {
-            prgProgress.Value = progress;
-            lblProgressUpdate.Text = message;
-            Application.DoEvents();
-        }
-
-        public void LogEvent(string message)
-        {
-            txtLogOutput.Text += message + Environment.NewLine;
-            txtLogOutput.SelectionStart = txtLogOutput.Text.Length;
-            txtLogOutput.ScrollToCaret();
             Application.DoEvents();
         }
 
@@ -68,11 +60,11 @@ namespace BvNugetPreviewGenerator.Generate
 
 
 
-            if (result.IsSuccess)
+            if (result.ResultType == PreviewPackageGenerateResultType.Success)
             {
                 lblHeading.Text = "Nuget Preview Package Created Successfully";
             }
-            else if (result.IsExpectedFailure)
+            else if (result.ResultType == PreviewPackageGenerateResultType.ExpectedFailure)
             {
                 lblHeading.Text = "Unable to Create Nuget Preview Package";
                 picMainIcon.Image = SystemIcons.Warning.ToBitmap();
@@ -92,10 +84,30 @@ namespace BvNugetPreviewGenerator.Generate
             Close();
         }
 
-        private void GenerateForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void GenerateForm_Shown(object sender, EventArgs e)
         {
-            this.Hide();
-            e.Cancel = true;
+            StartProgress();            
+            _Generator.GeneratePackage(ProjectPath, NugetPath);
+        }
+
+        private void Generator_CompleteEvent(PackageGenerateResult obj)
+        {
+            SetResult(obj);
+        }
+
+        private void Generator_LogEvent(string message)
+        {
+            txtLogOutput.Text += message + Environment.NewLine;
+            txtLogOutput.SelectionStart = txtLogOutput.Text.Length;
+            txtLogOutput.ScrollToCaret();
+            Application.DoEvents();
+        }
+
+        private void Generator_ProgressEvent(int progress, string message)
+        {
+            prgProgress.Value = progress;
+            lblProgressUpdate.Text = message;
+            Application.DoEvents();
         }
     }
 }

@@ -182,7 +182,7 @@
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.Text = "Generate Preview Nuget Package";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GenerateForm_FormClosing);
+            this.Shown += new System.EventHandler(this.GenerateForm_Shown);
             this.flpLayout.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();

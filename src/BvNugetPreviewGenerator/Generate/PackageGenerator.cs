@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.Text.Editor.Commanding.Commands;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
@@ -14,40 +15,78 @@ using System.Xml;
 
 namespace BvNugetPreviewGenerator.Generate
 {
-    public class PreviewPackageGenerator
+    public class PackageGenerator : IPackageGenerator
     {
         public event Action<string> LogEvent;
         public event Action<int, string> ProgressEvent;
-        public event Action<PreviewPackageGenerateResult> CompleteEvent;
-        public void GeneratePackage(string projectPath, string nugetPath)
-        {
-            
+        public event Action<PackageGenerateResult> CompleteEvent;
 
-            var context = new PreviewPackageGeneratorContext();
-            context.NugetPath = nugetPath;
-            context.ProjectPath = projectPath;
-            context.ProjectFilename = Path.GetFileName(projectPath);
+        private string _NugetPath;
+        private string _ProjectPath;
+        private int _Progress;
+        private BackgroundWorker _Worker;
+        private PackageGenerateResult _Result;
+        public PackageGenerator()
+        {
+            _Worker = new BackgroundWorker();
+            _Worker.WorkerReportsProgress = true;
+            _Worker.DoWork += Worker_DoWork;
+            _Worker.ProgressChanged += Worker_ProgressChanged;
+            _Worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
+        }
+
+        private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (CompleteEvent != null)
+                CompleteEvent(_Result);
+        }
+
+        private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            PackageGenerateProgress result = e.UserState as PackageGenerateProgress;
+            if (result == null)
+                return;
+
+            if (result.IsUpdate && ProgressEvent != null)
+                ProgressEvent(e.ProgressPercentage, result.LogMessage);
+
+
+            if (!result.IsUpdate && LogEvent != null)
+                LogEvent(result.LogMessage);
+        }
+
+        private void Worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            var context = new PackageGeneratorContext();
+            context.NugetPath = _NugetPath;
+            context.ProjectPath = _ProjectPath;
+            context.ProjectFilename = Path.GetFileName(_ProjectPath);
             context.TempPath = Path.GetTempPath();
+
+
 
             try
             {
+
+
+
                 Progress(0, "Performing Initial Checks");
-                PreviewPackageGenerateException
-                    .ThrowIf(string.IsNullOrWhiteSpace(nugetPath),
+                PackageGenerateException
+                    .ThrowIf(string.IsNullOrWhiteSpace(_NugetPath),
                         "No NuGet repository folder has been specified, please configure a folder " +
                         "Local Nuget Repository Folder in Nuget Package Manager > Nuget Preview Generator.");
 
-                PreviewPackageGenerateException
-                    .ThrowIf(!Directory.Exists(nugetPath),
+                PackageGenerateException
+                    .ThrowIf(!Directory.Exists(_NugetPath),
                         "The configured Local Nuget Repository Folder does not exist, please check the " +
                         "configured folder in Nuget Package Manager > Nuget Preview Generator is correct.");
 
-                PreviewPackageGenerateException
-                    .ThrowIf(string.IsNullOrWhiteSpace(projectPath),
+                PackageGenerateException
+                    .ThrowIf(string.IsNullOrWhiteSpace(_ProjectPath),
                         "No project file was specified for this package.");
                 Progress(5, "Initial Checks Complete");
                 Progress(10, "Updating Project Version");
-                UpdateProjectVersion(context);                
+                UpdateProjectVersion(context);
                 Progress(15, "Building Project");
                 RunDotNetBuild(context);
                 Progress(75, "Pushing Project to Nuget");
@@ -56,24 +95,28 @@ namespace BvNugetPreviewGenerator.Generate
                 RestoreProjectVersion(context);
                 Progress(95, "Cleaning Up");
                 CleanUp(context);
-                Progress(100, "Generation Complete");                
+                Progress(100, "Generation Complete");
+                _Result = PackageGenerateResult.CreateSuccessResult(context);
             }
-            catch (PreviewPackageGenerateException ex)
+            catch (PackageGenerateException ex)
             {
-                var failResult = PreviewPackageGenerateResult.CreateFailureResult(context, ex);
-                CompleteEvent(failResult);
+                _Result = PackageGenerateResult.CreateExpectedFailureResult(context, ex);                
             }
             catch (Exception ex)
             {
-                var failResult = PreviewPackageGenerateResult.CreateFailureResult(context, ex);
-                CompleteEvent(failResult);
-            }
-
-            var result = PreviewPackageGenerateResult.CreateSuccessResult(context);
-            CompleteEvent(result);
+                _Result = PackageGenerateResult.CreateUnexpectedFailureResult(context, ex);                
+            }            
         }
 
-        private void RestoreProjectVersion(PreviewPackageGeneratorContext context)
+        public void GeneratePackage(string projectPath, string nugetPath)
+        {
+            PackageGenerateException.ThrowIf(_Worker.IsBusy, "GeneratePackage is Already Running");
+            this._ProjectPath = projectPath;
+            this._NugetPath = nugetPath;
+            _Worker.RunWorkerAsync();            
+        }
+
+        private void RestoreProjectVersion(PackageGeneratorContext context)
         {
             Log($"Restoring original version of {context.ProjectFilename}");
             SaveFile(context.ProjectPath, context.OriginalProjectContent);
@@ -107,22 +150,20 @@ namespace BvNugetPreviewGenerator.Generate
                 parent.AppendChild(newNode);
             }
         }
-
-
-        private void UpdateProjectVersion(PreviewPackageGeneratorContext context)
+        private void UpdateProjectVersion(PackageGeneratorContext context)
         {
             Log($"Updating Project Version in {context.ProjectFilename}");
             context.OriginalProjectContent = LoadFile(context.ProjectPath);
             var doc = new XmlDocument();
             doc.LoadXml(context.OriginalProjectContent);
             var versionNode = doc.SelectSingleNode("/Project/PropertyGroup/Version");
-            PreviewPackageGenerateException
+            PackageGenerateException
                 .ThrowIf(versionNode == null, 
                 "No version number found, project must contain a version number in the " +
                 "format Major.Minor.Patch e.g. 1.5.3");
 
             if (!PackageVersion.TryParse(versionNode.InnerText, out var version))
-                throw new PreviewPackageGenerateException("Version number did not match " +
+                throw new PackageGenerateException("Version number did not match " +
                     "expected format. Project must contain a version number in the format " +
                     "Major.Minor.Patch e.g. 1.5.3");
 
@@ -138,8 +179,7 @@ namespace BvNugetPreviewGenerator.Generate
             context.VersionNo = version.ToString();
             Log($"Update Complete");
         }
-
-        private string RunDotNetBuild(PreviewPackageGeneratorContext context)
+        private string RunDotNetBuild(PackageGeneratorContext context)
         {
             Log($"Running DotNet Build Of {context.ProjectFilename}");
             var projectPath = context.ProjectPath;
@@ -153,8 +193,7 @@ namespace BvNugetPreviewGenerator.Generate
             Log($"DotNet Build Complete");
             return output;
         }
-
-        private string RunNugetPush(PreviewPackageGeneratorContext context)
+        private string RunNugetPush(PackageGeneratorContext context)
         {
             var projectPath = context.ProjectPath;
             var outputFolder = context.TempPath;
@@ -176,8 +215,7 @@ namespace BvNugetPreviewGenerator.Generate
             Log($"DotNet Push Complete");
             return output;
         }
-
-        private void CleanUp(PreviewPackageGeneratorContext context)
+        private void CleanUp(PackageGeneratorContext context)
         {
             Log("Cleaning up temporary files");
             var tempFolder = context.TempPath;
@@ -187,8 +225,7 @@ namespace BvNugetPreviewGenerator.Generate
                 File.Delete(fullProjName);
             Log("Cleanup Complete");
         }
-
-        private string RunTask(PreviewPackageGeneratorContext context,string processName, string parameters)
+        private string RunTask(PackageGeneratorContext context,string processName, string parameters)
         {
             try
             {
@@ -216,23 +253,14 @@ namespace BvNugetPreviewGenerator.Generate
             }
             
         }
-
         public void Log(string message)
         {
-            if (LogEvent != null)
-                LogEvent(message);
+            _Worker.ReportProgress(_Progress, new PackageGenerateProgress(message));
         }
-
-        public void Progress(int progress,string message)
+        public void Progress(int progress, string message)
         {
-            if (ProgressEvent != null)
-                ProgressEvent(progress,message);
-        }
-
-        public void Complete(PreviewPackageGenerateResult result)
-        {
-            if (CompleteEvent != null)
-                CompleteEvent(result);
+            _Progress = progress;
+            _Worker.ReportProgress(progress, new PackageGenerateProgress(message, true));
         }
     }
 }

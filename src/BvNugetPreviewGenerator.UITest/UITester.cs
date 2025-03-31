@@ -1,4 +1,5 @@
 ﻿using BvNugetPreviewGenerator.Generate;
+using BvNugetPreviewGenerator.UITest.Mocks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,16 +23,16 @@ namespace BvNugetPreviewGenerator.UITest
 
         private void btnSuccessResult_Click(object sender, EventArgs e)
         {
-            var context = new PreviewPackageGeneratorContext();
-            var result = PreviewPackageGenerateResult.CreateSuccessResult(context);
-            var form = new GenerateForm();
-            form.SetResult(result);
-            form.ShowDialog();
+            var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.Success, null);
+            using (var form = new GenerateForm(mock))
+            {
+                form.ShowDialog();
+            }
         }
 
         private void btnFail_Click(object sender, EventArgs e)
         {
-            var context = new PreviewPackageGeneratorContext();
+            var context = new PackageGeneratorContext();
             try
             {
                 var exception = new Exception("Test Exception");                
@@ -39,10 +40,11 @@ namespace BvNugetPreviewGenerator.UITest
             }
             catch (Exception ex)
             {
-                var result = PreviewPackageGenerateResult.CreateFailureResult(context, ex);
-                var form = new GenerateForm();
-                form.SetResult(result);
-                form.ShowDialog();
+                var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.UnexpectedFailure, ex);
+                using (var form = new GenerateForm(mock))
+                {
+                    form.ShowDialog();
+                }
             }
             
 
@@ -50,47 +52,22 @@ namespace BvNugetPreviewGenerator.UITest
 
         private void btnExpectedFailureResult_Click(object sender, EventArgs e)
         {
-            var exception = new PreviewPackageGenerateException("Test Exception");
-            var context = new PreviewPackageGeneratorContext();
-            
-            var result = PreviewPackageGenerateResult.CreateFailureResult(context, exception);
-            var form = new GenerateForm();
-            form.LogEvent("Some Test logging for a success");
-            form.LogEvent("More Test logging for a success");
-            form.SetResult(result);
-            form.ShowDialog();
+            var ex = new PackageGenerateException("Expected Failure");
+            var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.ExpectedFailure, ex);
+            using (var form = new GenerateForm(mock))
+            {
+                form.ShowDialog();
+            }
         }
 
         private void btnProgressTest_Click(object sender, EventArgs e)
         {
-            var context = new PreviewPackageGeneratorContext();
-            var result = PreviewPackageGenerateResult.CreateSuccessResult(context);
-            var form = new GenerateForm();            
-            form.Show();
-            form.StartProgress();
-            form.LogEvent("Starting Test");
-            form.SetProgress(10,"First Stuff");
-            form.LogEvent("RUnning Process 1");
-            Thread.Sleep(1000);
-            form.LogEvent("Finished Process 1");
-            form.SetProgress(30, "Second Stuff");
-            Thread.Sleep(1000);
-            form.LogEvent("Running Process 2");
-            Thread.Sleep(1000);
-            form.LogEvent("Finished Process 2");
-            form.SetProgress(80, "Last Stuff");
-            form.LogEvent("Running Process 3");
-            Thread.Sleep(2000);
-            form.LogEvent("Process 3 Stage 1");
-            Thread.Sleep(2000);
-            form.LogEvent("Process 3 Stage 2");
-            Thread.Sleep(2000);
-            form.LogEvent("Process 3 Stage 3");
-            form.LogEvent("Finished Process 3");
-            Thread.Sleep(2000);
-            form.SetProgress(100, "Done");
-            Thread.Sleep(2000);
-            form.SetResult(result);
+            var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.Success, null);
+            using(var form = new GenerateForm(mock))
+            {
+                form.ShowDialog();
+            }
+  
         }
 
         private void btnTestProgessFailure_Click(object sender, EventArgs e)
@@ -106,33 +83,11 @@ namespace BvNugetPreviewGenerator.UITest
                 testEx = ex;
             }
 
-            var context = new PreviewPackageGeneratorContext();
-            var result = PreviewPackageGenerateResult.CreateFailureResult(context, testEx);
-            var form = new GenerateForm();
-            form.Show();
-            form.StartProgress();
-            form.LogEvent("Starting Test");
-            form.SetProgress(10, "First Stuff");
-            form.LogEvent("RUnning Process 1");
-            Thread.Sleep(1000);
-            form.LogEvent("Finished Process 1");
-            form.SetProgress(30, "Second Stuff");
-            Thread.Sleep(500);
-            form.LogEvent("Running Process 2");
-            Thread.Sleep(500);
-            form.LogEvent("Finished Process 2");
-            form.SetProgress(80, "Last Stuff");
-            form.LogEvent("Running Process 3");
-            Thread.Sleep(300);
-            form.LogEvent("Process 3 Stage 1");
-            Thread.Sleep(800);
-            form.LogEvent("Process 3 Stage 2");
-            Thread.Sleep(1000);
-            form.LogEvent("Process 3 Stage 3");
-            form.LogEvent("Finished Process 3");
-            Thread.Sleep(1000);
-            form.SetProgress(100, "Done");
-            form.SetResult(result);
+            var mock = new MockPreviewPackageGenerator(PreviewPackageGenerateResultType.UnexpectedFailure, testEx);
+            using (var form = new GenerateForm(mock))
+            {
+                form.ShowDialog();
+            }
         }
     }
 }
